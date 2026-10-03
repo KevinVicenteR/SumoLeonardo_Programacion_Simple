@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "SonarQube: actualizar base de compilación",
+            "type": "process",
+            "command": "${userHome}/.platformio/penv/bin/pio",
+            "args": ["run", "-e", "leonardo", "-t", "compiledb"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": []
+        }
+    ]
+}

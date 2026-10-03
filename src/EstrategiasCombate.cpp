@@ -26,41 +26,41 @@ class Movimientos{
     unsigned long ultimoAvistamiento = 0;
     unsigned long finEscape = 0;
 
-    void avanzar(int velocidad){
+    void avanzar(int velocidad) const {
         motores.setDireccion(Motores::IZQUIERDO, Motores::AVANZAR);
         motores.setDireccion(Motores::DERECHO, Motores::AVANZAR);
         motores.ControlPID(0, velocidad);
     }
 
-    void avanzarCorregido(int velocidad, int error){
+    void avanzarCorregido(int velocidad, int error) const {
         motores.setDireccion(Motores::IZQUIERDO, Motores::AVANZAR);
         motores.setDireccion(Motores::DERECHO, Motores::AVANZAR);
         motores.ControlPID(error, velocidad);
     }
 
-    void retroceder(int velocidad){
+    void retroceder(int velocidad) const {
         motores.setDireccion(Motores::IZQUIERDO, Motores::RETROCEDER);
         motores.setDireccion(Motores::DERECHO, Motores::RETROCEDER);
         motores.ControlPID(0, velocidad);
     }
 
-    void girarIzquierda(int velocidad){
+    void girarIzquierda(int velocidad) const {
         motores.setDireccion(Motores::IZQUIERDO, Motores::GIRAR_IZQUIERDA);
         motores.setDireccion(Motores::DERECHO, Motores::GIRAR_IZQUIERDA);
         motores.ControlPID(0, velocidad);
     }
 
-    void girarDerecha(int velocidad){
+    void girarDerecha(int velocidad) const {
         motores.setDireccion(Motores::IZQUIERDO, Motores::GIRAR_DERECHA);
         motores.setDireccion(Motores::DERECHO, Motores::GIRAR_DERECHA);
         motores.ControlPID(0, velocidad);
     }
 
-    void atacar(){
+    void atacar() const {
         avanzar(Motores::VELOCIDAD_ALTA);
     }
 
-    void detener(){
+    void detener() const {
         motores.setDireccion(Motores::IZQUIERDO, Motores::PARAR);
         motores.setDireccion(Motores::DERECHO, Motores::PARAR);
     }
@@ -121,7 +121,7 @@ class Movimientos{
 
     public:
 
-    void iniciar(){
+    void iniciar() const {
         sensores.iniciar();
         motores.iniciar();
     }
@@ -191,12 +191,17 @@ class Movimientos{
     }
 };
 
-Movimientos movimientos;
+namespace {
+Movimientos& obtenerMovimientos(){
+    static Movimientos movimientos;
+    return movimientos;
+}
+}
 
 void iniciarEstrategiaCombate(){
-    movimientos.iniciar();
+    obtenerMovimientos().iniciar();
 }
 
 void ejecutarEstrategiaCombate(){
-    movimientos.ejecutar();
+    obtenerMovimientos().ejecutar();
 }

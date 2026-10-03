@@ -3,59 +3,76 @@
 
 #include <Arduino.h>
 
-enum { IZQUIERDO = 0, DERECHO = 1 };
-enum { FRONTAL_IZQ = 0, FRONTAL_CENTRO = 1, FRONTAL_DER = 2 };
-enum { PISO_IZQ = 0, PISO_DER = 1 };
+constexpr uint8_t IZQUIERDO = 0;
+constexpr uint8_t DERECHO = 1;
+constexpr uint8_t FRONTAL_IZQ = 0;
+constexpr uint8_t FRONTAL_CENTRO = 1;
+constexpr uint8_t FRONTAL_DER = 2;
+constexpr uint8_t PISO_IZQ = 0;
+constexpr uint8_t PISO_DER = 1;
 
 
 class Sensores{
     private:
     
-    int Sensores_Frontales[3]= {A0, A1, A2}; 
-    int Sensores_Laterales[2]= {A3, A4}; 
-    int Sensores_De_Piso[2]= {A5, A6}; 
-    
+    static constexpr uint8_t FRONTAL_IZQUIERDO_PIN = A0;
+    static constexpr uint8_t FRONTAL_CENTRO_PIN = A1;
+    static constexpr uint8_t FRONTAL_DERECHO_PIN = A2;
+    static constexpr uint8_t LATERAL_IZQUIERDO_PIN = A3;
+    static constexpr uint8_t LATERAL_DERECHO_PIN = A4;
+    static constexpr uint8_t PISO_IZQUIERDO_PIN = A5;
+    static constexpr uint8_t PISO_DERECHO_PIN = A6;
+
     static const int UMBRAL_BORDE = 120;
     static const int HISTERESIS = 15;
-    bool estadoBorde[2] = {false, false};
+    bool estadoBordeIzquierdo = false;
+    bool estadoBordeDerecho = false;
 
     public:
 
-    void iniciar(){
-        for (int i = 0; i < 3; i++) pinMode(Sensores_Frontales[i], INPUT);
-        for (int i = 0; i < 2; i++) pinMode(Sensores_Laterales[i], INPUT);
-        for (int i = 0; i < 2; i++) pinMode(Sensores_De_Piso[i], INPUT);
+    void iniciar() const {
+        pinMode(FRONTAL_IZQUIERDO_PIN, INPUT);
+        pinMode(FRONTAL_CENTRO_PIN, INPUT);
+        pinMode(FRONTAL_DERECHO_PIN, INPUT);
+        pinMode(LATERAL_IZQUIERDO_PIN, INPUT);
+        pinMode(LATERAL_DERECHO_PIN, INPUT);
+        pinMode(PISO_IZQUIERDO_PIN, INPUT);
+        pinMode(PISO_DERECHO_PIN, INPUT);
     }
 
-    int getSensorPiso(int sensor){
-        return analogRead(Sensores_De_Piso[sensor]);
+    int getSensorPiso(uint8_t sensor) const {
+        return analogRead(sensor == PISO_IZQ ? PISO_IZQUIERDO_PIN : PISO_DERECHO_PIN);
     }
-    int getSensorFrontal(int sensor){
-        return digitalRead(Sensores_Frontales[sensor]);
+    int getSensorFrontal(uint8_t sensor) const {
+        switch (sensor) {
+            case FRONTAL_IZQ: return digitalRead(FRONTAL_IZQUIERDO_PIN);
+            case FRONTAL_CENTRO: return digitalRead(FRONTAL_CENTRO_PIN);
+            default: return digitalRead(FRONTAL_DERECHO_PIN);
+        }
     }
-    int getSensorLateral(int sensor){
-        return digitalRead(Sensores_Laterales[sensor]);
+    int getSensorLateral(uint8_t sensor) const {
+        return digitalRead(sensor == IZQUIERDO ? LATERAL_IZQUIERDO_PIN : LATERAL_DERECHO_PIN);
     }
-
 
     // El borde blanco mide solo 1 cm: se activa apenas cruza el umbral (sin restar
     // histeresis) para no perder la linea a alta velocidad; la histeresis solo
     // aplica al soltar el estado.
-    bool esBorde(int sensor){
+    bool esBorde(uint8_t sensor){
+        bool& estado = sensor == PISO_IZQ ? estadoBordeIzquierdo : estadoBordeDerecho;
         int valor = getSensorPiso(sensor);
-        if (!estadoBorde[sensor] && valor < UMBRAL_BORDE) {
-            estadoBorde[sensor] = true;
-        } else if (estadoBorde[sensor] && valor > (UMBRAL_BORDE + HISTERESIS)) {
-            estadoBorde[sensor] = false;
+        if (!estado && valor < UMBRAL_BORDE) {
+            estado = true;
+        } else if (estado && valor > (UMBRAL_BORDE + HISTERESIS)) {
+            estado = false;
         }
-        return estadoBorde[sensor];
+        return estado;
     }
 
-    bool esEnemigoFRONTAL(int sensor){
+    bool esEnemigoFRONTAL(uint8_t sensor) const {
         return getSensorFrontal(sensor) == HIGH;
     }
     
-    bool esEnemigoLATERAL(int sensor){
+    bool esEnemigoLATERAL(uint8_t sensor) const {
         return getSensorLateral(sensor) == HIGH;
     }
 

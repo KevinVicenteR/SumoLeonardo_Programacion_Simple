@@ -6,77 +6,96 @@
 class Motores{
     public:
 
-    enum { IZQUIERDO = 0, DERECHO = 1 };
-    enum { AVANZAR = 0, RETROCEDER = 1, PARAR = 2, GIRAR_IZQUIERDA = 3, GIRAR_DERECHA = 4 ,ATACAR =5 };
+    static constexpr uint8_t IZQUIERDO = 0;
+    static constexpr uint8_t DERECHO = 1;
+    static constexpr uint8_t AVANZAR = 0;
+    static constexpr uint8_t RETROCEDER = 1;
+    static constexpr uint8_t PARAR = 2;
+    static constexpr uint8_t GIRAR_IZQUIERDA = 3;
+    static constexpr uint8_t GIRAR_DERECHA = 4;
+    static constexpr uint8_t ATACAR =5;
 
-    enum { VELOCIDAD_BAJA = 0, VELOCIDAD_MEDIA = 1, VELOCIDAD_ALTA = 2 };
+    static constexpr uint8_t VELOCIDAD_BAJA = 0;
+    static constexpr uint8_t VELOCIDAD_MEDIA = 1;
+    static constexpr uint8_t VELOCIDAD_ALTA = 2;
 
-    enum { PWM_BAJO = 100, PWM_MEDIO = 150, PWM_ALTO = 255 };
+    static constexpr uint8_t PWM_BAJO = 100;
+    static constexpr uint8_t PWM_MEDIO = 150;
+    static constexpr uint8_t PWM_ALTO = 255;
 
-    enum { IN1 = 0, IN2 = 1, PWM = 2 }; 
-    
+    static constexpr uint8_t IN1 = 0;
+    static constexpr uint8_t IN2 = 1;
+    static constexpr uint8_t PWM = 2;
+
     private:
-    
-    int Motor_Izquierdo_Con_PWM[3] = {5, 6, 13};
-    int Motor_Derecho_Con_PWM[3] = {9, 10, 11};
-    
+
+    struct PinesMotor {
+        uint8_t in1;
+        uint8_t in2;
+        uint8_t pwm;
+    };
+    const PinesMotor motorIzquierdo = {5, 6, 13};
+    const PinesMotor motorDerecho = {9, 10, 11};
+
 
     public:
 
-    void iniciar(){
-        for (int indice = 0; indice < 3; indice++) {
-            pinMode(Motor_Izquierdo_Con_PWM[indice], OUTPUT);
-            pinMode(Motor_Derecho_Con_PWM[indice], OUTPUT);
-        }
+    void iniciar() const {
+        pinMode(motorIzquierdo.in1, OUTPUT);
+        pinMode(motorIzquierdo.in2, OUTPUT);
+        pinMode(motorIzquierdo.pwm, OUTPUT);
+        pinMode(motorDerecho.in1, OUTPUT);
+        pinMode(motorDerecho.in2, OUTPUT);
+        pinMode(motorDerecho.pwm, OUTPUT);
     }
 
-    void setDireccion(int motor, int movimiento){
-        int *pines = (motor == IZQUIERDO) ? Motor_Izquierdo_Con_PWM : Motor_Derecho_Con_PWM;
+    void setDireccion(uint8_t motor, uint8_t movimiento) const {
+        const PinesMotor& pines = (motor == IZQUIERDO) ? motorIzquierdo : motorDerecho;
         switch(movimiento){
             case AVANZAR:
-                digitalWrite(pines[IN1], HIGH);
-                digitalWrite(pines[IN2], LOW);
+                digitalWrite(pines.in1, HIGH);
+                digitalWrite(pines.in2, LOW);
                 break;
             case RETROCEDER:
-                digitalWrite(pines[IN1], LOW);
-                digitalWrite(pines[IN2], HIGH);
+                digitalWrite(pines.in1, LOW);
+                digitalWrite(pines.in2, HIGH);
                 break;
             case ATACAR:
-                digitalWrite(pines[IN1], HIGH);
-                digitalWrite(pines[IN2], HIGH);
+                digitalWrite(pines.in1, HIGH);
+                digitalWrite(pines.in2, HIGH);
                 break;
             case GIRAR_DERECHA:
                 if (motor == IZQUIERDO) {
-                    digitalWrite(pines[IN1], HIGH);
-                    digitalWrite(pines[IN2], LOW);
+                    digitalWrite(pines.in1, HIGH);
+                    digitalWrite(pines.in2, LOW);
                 } else {
-                    digitalWrite(pines[IN1], LOW);
-                    digitalWrite(pines[IN2], HIGH);
+                    digitalWrite(pines.in1, LOW);
+                    digitalWrite(pines.in2, HIGH);
                 }
                 break;
             case GIRAR_IZQUIERDA:
                 if (motor == IZQUIERDO) {
-                    digitalWrite(pines[IN1], LOW);
-                    digitalWrite(pines[IN2], HIGH);
+                    digitalWrite(pines.in1, LOW);
+                    digitalWrite(pines.in2, HIGH);
                 } else {
-                    digitalWrite(pines[IN1], HIGH);
-                    digitalWrite(pines[IN2], LOW);
+                    digitalWrite(pines.in1, HIGH);
+                    digitalWrite(pines.in2, LOW);
                 }
                 break;
-            default: 
-                digitalWrite(pines[IN1], LOW);
-                digitalWrite(pines[IN2], LOW);
+            default:
+                digitalWrite(pines.in1, LOW);
+                digitalWrite(pines.in2, LOW);
                 break;
         }
     }
 
-    int getPinMotorIzquierdo(){
-        return Motor_Izquierdo_Con_PWM[PWM];
+    uint8_t getPinMotorIzquierdo() const {
+        return motorIzquierdo.pwm;
     }
-    int getPinMotorDerecho(){
-        return Motor_Derecho_Con_PWM[PWM];
+    uint8_t getPinMotorDerecho() const {
+        return motorDerecho.pwm;
     }
-    int getPWM(int velocidad){
+    int getPWM(int velocidad) const {
         switch(velocidad){
             case VELOCIDAD_BAJA:
                 return PWM_BAJO;
@@ -89,16 +108,16 @@ class Motores{
         }
     }
 
-    int ControlPID(int error, int velocidad){
+    int ControlPID(int error, int velocidad) const {
         int pwm = getPWM(velocidad);
-        int control = error * 2; 
+        int control = error * 2;
         int pwmIzquierdo = constrain(pwm + control, 0, 255);
         int pwmDerecho = constrain(pwm - control, 0, 255);
         analogWrite(getPinMotorIzquierdo(), pwmIzquierdo);
         analogWrite(getPinMotorDerecho(), pwmDerecho);
-        return (pwmIzquierdo + pwmDerecho) / 2; 
+        return (pwmIzquierdo + pwmDerecho) / 2;
     }
-   
+
 
 };
 
