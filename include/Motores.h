@@ -23,6 +23,32 @@ class Motores{
     static constexpr uint8_t PWM_MEDIO = 150;
     static constexpr uint8_t PWM_ALTO = 255;
 
+    // Datos fisicos del robot: motores de 750 rpm, rueda de ~3 cm y ~8 cm entre ruedas.
+    // FACTOR_CARGA estima la velocidad real frente a la teorica (friccion, peso, bateria)
+    // y TIEMPO_RESPUESTA_MS cubre la aceleracion/inversion del motor. Calibrar en pista.
+    static constexpr float RPM_MOTOR = 750.0f;
+    static constexpr float DIAMETRO_RUEDA_CM = 3.0f;
+    static constexpr float SEPARACION_RUEDAS_CM = 8.0f;
+    static constexpr float FACTOR_CARGA = 0.6f;
+    static constexpr unsigned long TIEMPO_RESPUESTA_MS = 40;
+
+    // Dohyo circular de 70 cm de diametro con borde blanco de 1 cm.
+    static constexpr float DIAMETRO_DOHYO_CM = 70.0f;
+    static constexpr float RADIO_DOHYO_CM = DIAMETRO_DOHYO_CM / 2.0f;
+    static constexpr float ANCHO_BORDE_CM = 1.0f;
+    static constexpr float VELOCIDAD_MAX_CM_S = RPM_MOTOR / 60.0f * PI * DIAMETRO_RUEDA_CM * FACTOR_CARGA;
+
+    // Tiempo para recorrer una distancia en linea recta al PWM indicado
+    // (se asume velocidad proporcional al PWM).
+    static constexpr unsigned long msParaDistancia(float cm, uint8_t pwm = PWM_ALTO) {
+        return TIEMPO_RESPUESTA_MS + static_cast<unsigned long>(cm * PWM_ALTO / pwm / VELOCIDAD_MAX_CM_S * 1000.0f);
+    }
+
+    // Tiempo a PWM_ALTO para girar sobre su eje (ruedas en sentido opuesto).
+    static constexpr unsigned long msParaGiro(float grados) {
+        return msParaDistancia(grados / 360.0f * PI * SEPARACION_RUEDAS_CM);
+    }
+
     static constexpr uint8_t IN1 = 0;
     static constexpr uint8_t IN2 = 1;
     static constexpr uint8_t PWM = 2;

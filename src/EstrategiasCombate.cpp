@@ -11,11 +11,17 @@ class Movimientos{
     int ultimoLadoEnemigo = -1;
     enum EstadoEscape { SIN_ESCAPE, RETROCEDIENDO, GIRANDO_ESCAPE };
 
-    static const unsigned long INTERVALO_BUSQUEDA_MS = 700;
+    // Busqueda en dohyo de 70 cm: una vuelta completa por giro y tramos de avance
+    // cortos (menos de medio radio) para no llegar al borde en cada barrido.
+    static constexpr float AVANCE_BUSQUEDA_CM = 15.0f;
+    static constexpr unsigned long GIRO_BUSQUEDA_MS = Motores::msParaGiro(360.0f);
+    static constexpr unsigned long AVANCE_BUSQUEDA_MS = Motores::msParaDistancia(AVANCE_BUSQUEDA_CM, Motores::PWM_MEDIO);
     static const unsigned long INTERVALO_ATAQUE_MS = 450;
     static const unsigned long PERSISTENCIA_RASTRO_MS = 600;
-    static const unsigned long RETROCESO_BORDE_MS = 180;
-    static const unsigned long GIRO_ESCAPE_MS = 280;
+    static constexpr float RETROCESO_BORDE_CM = 6.0f;
+    static constexpr float GIRO_ESCAPE_GRADOS = 135.0f;
+    static constexpr unsigned long RETROCESO_BORDE_MS = Motores::msParaDistancia(RETROCESO_BORDE_CM);
+    static constexpr unsigned long GIRO_ESCAPE_MS = Motores::msParaGiro(GIRO_ESCAPE_GRADOS);
 
     EstadoEscape estadoEscape = SIN_ESCAPE;
     bool giroEscapeDerecha = true;
@@ -93,7 +99,8 @@ class Movimientos{
     }
 
     void buscar(unsigned long ahora){
-        if (ahora - ultimoCambioBusqueda >= INTERVALO_BUSQUEDA_MS) {
+        unsigned long duracion = patronBusqueda < 2 ? GIRO_BUSQUEDA_MS : AVANCE_BUSQUEDA_MS;
+        if (ahora - ultimoCambioBusqueda >= duracion) {
             ultimoCambioBusqueda = ahora;
             patronBusqueda = (patronBusqueda + 1) % 4;
         }
