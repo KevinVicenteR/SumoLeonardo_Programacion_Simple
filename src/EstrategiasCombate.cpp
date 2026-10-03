@@ -6,7 +6,6 @@
 
 class Movimientos{
     private:
-
     Sensores sensores;
     Motores motores;
     int ultimoLadoEnemigo = -1;

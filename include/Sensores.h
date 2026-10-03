@@ -38,9 +38,12 @@ class Sensores{
     }
 
 
+    // El borde blanco mide solo 1 cm: se activa apenas cruza el umbral (sin restar
+    // histeresis) para no perder la linea a alta velocidad; la histeresis solo
+    // aplica al soltar el estado.
     bool esBorde(int sensor){
         int valor = getSensorPiso(sensor);
-        if (!estadoBorde[sensor] && valor < (UMBRAL_BORDE - HISTERESIS)) {
+        if (!estadoBorde[sensor] && valor < UMBRAL_BORDE) {
             estadoBorde[sensor] = true;
         } else if (estadoBorde[sensor] && valor > (UMBRAL_BORDE + HISTERESIS)) {
             estadoBorde[sensor] = false;
